@@ -1,0 +1,52 @@
+{
+  "entities": {
+    "SessionResult": {
+      "title": "Session Result",
+      "description": "The result of a customer service simulation session.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "description": "The Firebase UID of the user who performed the session." },
+        "traineeName": { "type": "string" },
+        "traineeId": { "type": "string" },
+        "scenario": { "type": "string" },
+        "personality": { "type": "string" },
+        "emotion": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "evaluation": { "$ref": "Evaluation" },
+        "resolutionStatus": { "type": "string", "enum": ["Resolved", "Not Fully Resolved"] },
+        "handlingTime": { "type": "integer" }
+      },
+      "required": ["id", "userId", "traineeName", "traineeId", "scenario", "personality", "emotion", "timestamp", "evaluation", "resolutionStatus", "handlingTime"]
+    },
+    "Evaluation": {
+      "title": "Evaluation",
+      "description": "The evaluation of a simulation session.",
+      "type": "object",
+      "properties": {
+        "summary": { "type": "string" },
+        "pros": { "type": "array", "items": { "type": "string" } },
+        "cons": { "type": "array", "items": { "type": "string" } },
+        "missedOpportunities": { "type": "array", "items": { "type": "string" } },
+        "scores": {
+          "type": "object",
+          "properties": {
+            "greeting": { "type": "integer" },
+            "empathy": { "type": "integer" },
+            "probing": { "type": "integer" },
+            "communication": { "type": "integer" },
+            "resolution": { "type": "integer" }
+          }
+        },
+        "finalScore": { "type": "integer" },
+        "coachingTips": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "firestore": {
+    "/sessions": {
+      "schema": "SessionResult",
+      "description": "A collection of simulation session results."
+    }
+  }
+}

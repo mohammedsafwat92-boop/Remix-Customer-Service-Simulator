@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: sessions
+    // Fields:
+    //   - id: string (required)
+    //   - traineeName: string (required)
+    //   - traineeId: string (required)
+    //   - scenario: string (required)
+    //   - personality: string (required)
+    //   - emotion: string (required)
+    //   - timestamp: string (required, ISO 8601)
+    //   - evaluation: map (required)
+    //   - resolutionStatus: string (required, enum: Resolved, Not Fully Resolved)
+    //   - handlingTime: number (required)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isValidSession(data) {
+      return data.id is string &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.traineeName is string && data.traineeName.size() > 0 && data.traineeName.size() < 100 &&
+             data.traineeId is string && data.traineeId.size() > 0 && data.traineeId.size() < 50 &&
+             data.scenario is string &&
+             data.personality is string &&
+             data.emotion is string &&
+             data.timestamp is string &&
+             data.evaluation is map &&
+             data.resolutionStatus in ['Resolved', 'Not Fully Resolved'] &&
+             data.handlingTime is number;
+    }
+
+    match /sessions/{sessionId} {
+      // Users can only read their own sessions
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid; 
+      
+      allow create: if isAuthenticated() && isValidSession(request.resource.data);
+      
+      // Updates and deletes are restricted
+      allow update, delete: if false; 
+    }
+  }
+}
